@@ -2,6 +2,7 @@ package com.alexandreb.playlist.controller;
 
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
+import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
 import com.alexandreb.playlist.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,12 @@ public class PlaylistController {
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204 No Content
     public void delete(@PathVariable Long id) {
         playlistService.delete(id);
+    }
+
+    @PatchMapping("/{id}")
+    public PlaylistResponse update(@PathVariable Long id, @RequestBody UpdatePlaylistRequest request
+    ) {
+        return playlistService.update(id, request);
     }
 
     @PostMapping("/{playlistId}/songs/{songId}")

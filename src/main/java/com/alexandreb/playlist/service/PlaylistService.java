@@ -2,6 +2,7 @@ package com.alexandreb.playlist.service;
 
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
+import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
 
 import java.util.List;
 
@@ -13,6 +14,8 @@ public interface PlaylistService {
     List<PlaylistResponse> findAll();
 
     void delete(Long id);
+
+    PlaylistResponse update(        Long id,UpdatePlaylistRequest request);
 
     PlaylistResponse addSong(Long playlistId, Long songId);
 

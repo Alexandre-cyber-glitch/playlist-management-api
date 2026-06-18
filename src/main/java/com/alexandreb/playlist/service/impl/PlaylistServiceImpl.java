@@ -2,6 +2,7 @@ package com.alexandreb.playlist.service.impl;
 
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
+import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
 import com.alexandreb.playlist.entity.PlaylistEntity;
 import com.alexandreb.playlist.entity.PlaylistSongEntity;
 import com.alexandreb.playlist.entity.SongEntity;
@@ -62,6 +63,20 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
+    public PlaylistResponse update(Long id, UpdatePlaylistRequest request) {
+        var playlist = getPlaylistOrThrow(id);
+
+        if (request.name() != null) {
+            playlist.setName(request.name());
+        }
+        if (request.description() != null) {
+            playlist.setDescription(request.description());
+        }
+        var playlistUpdated = playlistRepository.save(playlist);
+        return playlistMapper.toResponse(playlistUpdated);
+    }
+
+    @Override
     public PlaylistResponse addSong(Long playlistId, Long songId) {
         var playlist = getPlaylistOrThrow(playlistId);
         var song = getSongOrThrow(songId);
@@ -88,7 +103,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Override
     public PlaylistResponse removeSong(Long playlistId, Long songId) {
         var playlist = getPlaylistOrThrow(playlistId);
-        var playlistSong = getPlaylistSongOrThrow(playlistId,  songId);
+        var playlistSong = getPlaylistSongOrThrow(playlistId, songId);
 
         playlistSongRepository.delete(playlistSong);
         reorderPlaylist(playlistId);
