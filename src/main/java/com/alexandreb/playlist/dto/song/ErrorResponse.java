@@ -1,4 +1,4 @@
-package com.alexandreb.playlist.dto;
+package com.alexandreb.playlist.dto.song;
 
 import lombok.Builder;
 

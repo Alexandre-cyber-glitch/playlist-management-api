@@ -1,7 +1,7 @@
 package com.alexandreb.playlist.controller;
 
-import com.alexandreb.playlist.dto.CreateSongRequest;
-import com.alexandreb.playlist.dto.SongResponse;
+import com.alexandreb.playlist.dto.song.CreateSongRequest;
+import com.alexandreb.playlist.dto.song.SongResponse;
 import com.alexandreb.playlist.service.SongService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

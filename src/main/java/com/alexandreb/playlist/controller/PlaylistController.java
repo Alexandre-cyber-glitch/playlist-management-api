@@ -1,0 +1,52 @@
+package com.alexandreb.playlist.controller;
+
+import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
+import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
+import com.alexandreb.playlist.service.PlaylistService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/playlists")
+@RequiredArgsConstructor
+public class PlaylistController {
+
+    private final PlaylistService playlistService;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED) // 201 Created
+    public PlaylistResponse create(@RequestBody CreatePlaylistRequest request) {
+        return playlistService.create(request);
+    }
+
+    @GetMapping("/{id}")
+    public PlaylistResponse getById(@PathVariable Long id) {
+        return playlistService.getById(id);
+    }
+
+    @GetMapping
+    public List<PlaylistResponse> findAll() {
+        return playlistService.findAll();
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT) // 204 No Content
+    public void delete(@PathVariable Long id) {
+        playlistService.delete(id);
+    }
+
+    @PostMapping("/{playlistId}/songs/{songId}")
+    public PlaylistResponse addSong(@PathVariable Long playlistId, @PathVariable Long songId
+    ) {
+        return playlistService.addSong(playlistId, songId);
+    }
+
+    @DeleteMapping("/{playlistId}/songs/{songId}")
+    public PlaylistResponse removeSong(@PathVariable Long playlistId, @PathVariable Long songId
+    ) {
+        return playlistService.removeSong(playlistId, songId);
+    }
+}

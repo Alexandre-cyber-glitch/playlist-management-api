@@ -1,0 +1,20 @@
+package com.alexandreb.playlist.service;
+
+import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
+import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
+
+import java.util.List;
+
+public interface PlaylistService {
+    PlaylistResponse create(CreatePlaylistRequest request);
+
+    PlaylistResponse getById(Long id);
+
+    List<PlaylistResponse> findAll();
+
+    void delete(Long id);
+
+    PlaylistResponse addSong(Long playlistId, Long songId);
+
+    PlaylistResponse removeSong(Long playlistId, Long songId);
+}

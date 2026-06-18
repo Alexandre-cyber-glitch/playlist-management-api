@@ -1,7 +1,7 @@
 package com.alexandreb.playlist.service;
 
-import com.alexandreb.playlist.dto.CreateSongRequest;
-import com.alexandreb.playlist.dto.SongResponse;
+import com.alexandreb.playlist.dto.song.CreateSongRequest;
+import com.alexandreb.playlist.dto.song.SongResponse;
 
 import java.util.List;
 

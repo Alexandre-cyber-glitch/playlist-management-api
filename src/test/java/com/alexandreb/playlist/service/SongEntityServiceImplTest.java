@@ -1,8 +1,8 @@
 package com.alexandreb.playlist.service;
 
 import com.alexandreb.playlist.domain.Genre;
-import com.alexandreb.playlist.dto.CreateSongRequest;
-import com.alexandreb.playlist.dto.SongResponse;
+import com.alexandreb.playlist.dto.song.CreateSongRequest;
+import com.alexandreb.playlist.dto.song.SongResponse;
 import com.alexandreb.playlist.entity.SongEntity;
 import com.alexandreb.playlist.exception.ResourceNotFoundException;
 import com.alexandreb.playlist.mapper.SongMapper;
