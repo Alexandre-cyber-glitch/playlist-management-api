@@ -1,5 +1,6 @@
 package com.alexandreb.playlist.service.impl;
 
+import com.alexandreb.playlist.domain.ShuffleType;
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
 import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
@@ -13,6 +14,7 @@ import com.alexandreb.playlist.repository.PlaylistRepository;
 import com.alexandreb.playlist.repository.PlaylistSongRepository;
 import com.alexandreb.playlist.repository.SongRepository;
 import com.alexandreb.playlist.service.PlaylistService;
+import com.alexandreb.playlist.strategy.shuffle.ShuffleStrategyFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistSongRepository playlistSongRepository;
     private final SongRepository songRepository;
     private final PlaylistMapper playlistMapper;
+    private final ShuffleStrategyFactory shuffleStrategyFactory;
 
     @Override
     public PlaylistResponse create(CreatePlaylistRequest request) {
@@ -110,6 +113,30 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         return playlistMapper.toResponse(playlist);
     }
+
+    @Override
+    public PlaylistResponse shuffle(Long playlistId, ShuffleType shuffleType) {
+        var playlist = getPlaylistOrThrow(playlistId);
+        var playlistSongs = playlistSongRepository.findByPlaylistIdOrderByPositionAsc(playlistId);
+
+        if(playlistSongs.size() <= 1) {
+            // Nothing to shuffle : just one song in the playlist
+            return playlistMapper.toResponse(playlist);
+        }
+
+        var shuffleStrategy = shuffleStrategyFactory.getStrategy(shuffleType);
+        var shuffledSongs = shuffleStrategy.shuffle(playlistSongs);
+
+        // reorder the new position in every PlaylistSong
+        for(int i =0; i < shuffledSongs.size(); i ++) {
+            shuffledSongs.get(i).setPosition(i + 1);
+        }
+
+        playlistSongRepository.saveAll(shuffledSongs);
+
+        return playlistMapper.toResponse(playlist);
+    }
+
 
     private void reorderPlaylist(Long playlistId) {
         var remainingSongs = playlistSongRepository.findByPlaylistIdOrderByPositionAsc(playlistId);

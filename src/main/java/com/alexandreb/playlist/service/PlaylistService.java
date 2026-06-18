@@ -1,5 +1,6 @@
 package com.alexandreb.playlist.service;
 
+import com.alexandreb.playlist.domain.ShuffleType;
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
 import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
@@ -20,4 +21,6 @@ public interface PlaylistService {
     PlaylistResponse addSong(Long playlistId, Long songId);
 
     PlaylistResponse removeSong(Long playlistId, Long songId);
+
+    PlaylistResponse shuffle(Long playlistId, ShuffleType shuffleType);
 }

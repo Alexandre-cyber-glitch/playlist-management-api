@@ -1,5 +1,6 @@
 package com.alexandreb.playlist.controller;
 
+import com.alexandreb.playlist.domain.ShuffleType;
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
 import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
@@ -55,5 +56,11 @@ public class PlaylistController {
     public PlaylistResponse removeSong(@PathVariable Long playlistId, @PathVariable Long songId
     ) {
         return playlistService.removeSong(playlistId, songId);
+    }
+
+    @PostMapping("/{playlistId}/shuffle/{shuffleType}")
+    public PlaylistResponse shuffle(@PathVariable Long playlistId, @PathVariable ShuffleType shuffleType
+    ) {
+        return playlistService.shuffle(playlistId, shuffleType);
     }
 }
