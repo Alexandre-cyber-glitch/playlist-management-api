@@ -5,9 +5,7 @@ import com.alexandreb.playlist.domain.ShuffleType;
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
 import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
-import com.alexandreb.playlist.entity.PlaylistEntity;
 import com.alexandreb.playlist.entity.PlaylistSongEntity;
-import com.alexandreb.playlist.entity.SongEntity;
 import com.alexandreb.playlist.exception.BusinessException;
 import com.alexandreb.playlist.exception.ResourceNotFoundException;
 import com.alexandreb.playlist.mapper.PlaylistMapper;
@@ -21,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static com.alexandreb.playlist.service.impl.ServiceTools.*;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +70,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public PlaylistResponse update(Long id, UpdatePlaylistRequest request) {
-        var playlist = getPlaylistOrThrow(id);
+        var playlist = getPlaylistOrThrow(playlistRepository, id);
 
         if (request.name() != null) {
             playlist.setName(request.name());
@@ -84,8 +84,8 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public PlaylistResponse addSong(Long playlistId, Long songId) {
-        var playlist = getPlaylistOrThrow(playlistId);
-        var song = getSongOrThrow(songId);
+        var playlist = getPlaylistOrThrow(playlistRepository, playlistId);
+        var song = getSongOrThrow(songRepository, songId);
 
         var songAlreadyInPlaylist = playlistSongRepository.existsByPlaylistIdAndSongId(playlistId, songId);
         if (songAlreadyInPlaylist) {
@@ -108,21 +108,21 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public PlaylistResponse removeSong(Long playlistId, Long songId) {
-        var playlist = getPlaylistOrThrow(playlistId);
-        var playlistSong = getPlaylistSongOrThrow(playlistId, songId);
+        var playlist = getPlaylistOrThrow(playlistRepository, playlistId);
+        var playlistSong = getPlaylistSongOrThrow(playlistSongRepository, playlistId, songId);
 
         playlistSongRepository.delete(playlistSong);
-        reorderPlaylist(playlistId);
+        reorderPlaylist(playlistSongRepository, playlistId);
 
         return playlistMapper.toResponse(playlist);
     }
 
     @Override
     public PlaylistResponse shuffle(Long playlistId, ShuffleType shuffleType) {
-        var playlist = getPlaylistOrThrow(playlistId);
+        var playlist = getPlaylistOrThrow(playlistRepository, playlistId);
         var playlistSongs = playlistSongRepository.findByPlaylistIdOrderByPositionAsc(playlistId);
 
-        if(playlistSongs.size() <= 1) {
+        if (playlistSongs.size() <= 1) {
             // Nothing to shuffle : just one song in the playlist
             return playlistMapper.toResponse(playlist);
         }
@@ -131,7 +131,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         var shuffledSongs = shuffleStrategy.shuffle(playlistSongs);
 
         // reorder the new position in every PlaylistSong
-        for(int i =0; i < shuffledSongs.size(); i ++) {
+        for (int i = 0; i < shuffledSongs.size(); i++) {
             shuffledSongs.get(i).setPosition(i + 1);
         }
 
@@ -142,41 +142,11 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public String export(Long playlistId, ExportFormat format) {
-        var playlist = getPlaylistOrThrow(playlistId);
+        var playlist = getPlaylistOrThrow(playlistRepository, playlistId);
         var playlistSongs = playlistSongRepository.findByPlaylistIdOrderByPositionAsc(playlistId);
 
         var exporter = playlistExporterFactory.getExporter(format);
 
         return exporter.export(playlist, playlistSongs);
-    }
-
-
-    private void reorderPlaylist(Long playlistId) {
-        var remainingSongs = playlistSongRepository.findByPlaylistIdOrderByPositionAsc(playlistId);
-        for (int i = 0; i < remainingSongs.size(); i++) {
-            remainingSongs.get(i).setPosition(i + 1);
-        }
-        playlistSongRepository.saveAll(remainingSongs);
-    }
-
-    private PlaylistEntity getPlaylistOrThrow(Long playlistId) {
-        return playlistRepository.findById(playlistId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Playlist not found with id " + playlistId
-                ));
-    }
-
-    private SongEntity getSongOrThrow(Long songId) {
-        return songRepository.findById(songId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Song not found with id " + songId
-                ));
-    }
-
-    private PlaylistSongEntity getPlaylistSongOrThrow(Long playlistId, Long songId) {
-        return playlistSongRepository.findByPlaylistIdAndSongId(playlistId, songId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Song not found in playlist"
-                ));
     }
 }

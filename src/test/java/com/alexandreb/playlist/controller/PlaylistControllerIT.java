@@ -1,8 +1,12 @@
 package com.alexandreb.playlist.controller;
 
+import com.alexandreb.playlist.domain.Genre;
+import com.alexandreb.playlist.dto.song.SongResponse;
 import com.alexandreb.playlist.repository.PlaylistRepository;
 import com.alexandreb.playlist.repository.PlaylistSongRepository;
 import com.alexandreb.playlist.repository.SongRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +14,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static com.alexandreb.playlist.utils.Tools.*;
@@ -46,6 +53,9 @@ class PlaylistControllerIT {
 
     @Autowired
     private PlaylistSongRepository playlistSongRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
@@ -192,5 +202,37 @@ class PlaylistControllerIT {
         assertThat(response).contains("\"description\"");
         assertThat(response).contains("\"songs\"");
         assertThat(response).contains("Linkin Park");
+    }
+
+    @Test
+    void shouldRecommendSongsBasedOnDominantGenre() throws Exception {
+        var playlistId = createPlaylistAndReturnId(mockMvc, "Pop Mix", "Recommendation test");
+
+        var blankSpaceId = createSongAndReturnId(mockMvc, "Blank Space", "Taylor Swift", "POP", 185);
+        var cruelSummerId = createSongAndReturnId(mockMvc, "Cruel Summer", "Taylor Swift", "POP", 180);
+        var numbId = createSongAndReturnId(mockMvc, "Numb", "Linkin Park", "ROCK", 185);
+
+        createSongAndReturnId(mockMvc, "Love Story", "Taylor Swift", "POP", 190);
+        createSongAndReturnId(mockMvc, "Style", "Taylor Swift", "POP", 200);
+        createSongAndReturnId(mockMvc, "In the End", "Linkin Park", "ROCK", 210);
+
+        addSongToPlaylist(mockMvc, playlistId, blankSpaceId);
+        addSongToPlaylist(mockMvc, playlistId, cruelSummerId);
+        addSongToPlaylist(mockMvc, playlistId, numbId);
+
+        var response = mockMvc.perform(
+                        get("/api/playlists/{playlistId}/recommendations", playlistId))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var recommendations = objectMapper.readValue(response, new TypeReference<List<SongResponse>>() {});
+
+        assertThat(recommendations).hasSize(2);
+        assertThat(recommendations)
+                .extracting(SongResponse::title)
+                .containsExactlyInAnyOrder("Love Story", "Style");
+        assertThat(recommendations).extracting(SongResponse::genre).containsOnly(Genre.POP);
     }
 }

@@ -5,7 +5,9 @@ import com.alexandreb.playlist.domain.ShuffleType;
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
 import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
+import com.alexandreb.playlist.dto.song.SongResponse;
 import com.alexandreb.playlist.service.PlaylistService;
+import com.alexandreb.playlist.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +21,7 @@ import java.util.List;
 public class PlaylistController {
 
     private final PlaylistService playlistService;
+    private final RecommendationService recommendationService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201 Created
@@ -73,5 +76,10 @@ public class PlaylistController {
     public String export(@PathVariable Long playlistId, @PathVariable ExportFormat format
     ) {
         return playlistService.export(playlistId, format);
+    }
+
+    @GetMapping("/{playlistId}/recommendations")
+    public List<SongResponse> recommend(@PathVariable Long playlistId) {
+        return recommendationService.recommend(playlistId);
     }
 }
