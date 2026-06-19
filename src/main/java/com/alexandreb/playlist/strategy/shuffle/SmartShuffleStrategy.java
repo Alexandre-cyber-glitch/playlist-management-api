@@ -12,6 +12,7 @@ public class SmartShuffleStrategy implements ShuffleStrategy{
 
     /**
      * avoid as much as possible two identical artists in a row
+     *
      * Example:
      *
      * Taylor Swift
@@ -37,6 +38,8 @@ public class SmartShuffleStrategy implements ShuffleStrategy{
             String currentLastArtist = lastArtist;
 
             // Try to find a song from a different artist than the previous one
+            // Greedy approach: tries to avoid consecutive repetitions when possible.
+            // If the playlist distribution is unbalanced, consecutive artists may still occur because no valid alternative remains.
             var nextSong = remainingSongs.stream()
                     .filter(playlistSong ->
                             !playlistSong.getSong().getArtist().equals(currentLastArtist))

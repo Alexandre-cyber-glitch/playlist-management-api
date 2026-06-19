@@ -50,6 +50,8 @@ public class GenreBalancedShuffleStrategy implements ShuffleStrategy {
 
         // Pick one song from each genre at every iteration
         // until all songs have been consumed
+        // Greedy approach: tries to avoid consecutive repetitions when possible.
+        // If the playlist distribution is unbalanced, consecutive genres may still occur because no valid alternative remains.
         while (songsByGenre.values().stream().anyMatch(list -> !list.isEmpty())) {
             for (var songs : songsByGenre.values()) {
                 if (!songs.isEmpty()) {

@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.alexandreb.playlist.service.impl.ServiceTools.getPlaylistOrThrow;
+
 @Service
 @RequiredArgsConstructor
 public class RecommendationServiceImpl implements RecommendationService {
@@ -28,6 +30,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Override
     public List<SongResponse> recommend(Long playlistId) {
 
+        getPlaylistOrThrow(playlistRepository, playlistId);
         var playlistSongs = playlistSongRepository.findByPlaylistIdOrderByPositionAsc(playlistId);
 
         if (playlistSongs.isEmpty()) {
