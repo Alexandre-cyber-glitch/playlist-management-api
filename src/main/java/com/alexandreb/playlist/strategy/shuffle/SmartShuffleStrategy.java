@@ -1,12 +1,53 @@
 package com.alexandreb.playlist.strategy.shuffle;
 
 import com.alexandreb.playlist.entity.PlaylistSongEntity;
+import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
+@Service
 public class SmartShuffleStrategy implements ShuffleStrategy{
+
+    /**
+     * avoid as much as possible two identical artists in a row
+     * Example:
+     *
+     * Taylor Swift
+     * Taylor Swift
+     * Linkin Park
+     *
+     * becomes:
+     *
+     * Taylor Swift
+     * Linkin Park
+     * Taylor Swift
+     */
     @Override
     public List<PlaylistSongEntity> shuffle(List<PlaylistSongEntity> playlistSongEntities) {
-        return List.of();
+        var remainingSongs = new ArrayList<>(playlistSongEntities);
+        Collections.shuffle(remainingSongs); // Randomize the initial order to avoid preserving the playlist sequence
+
+        var result = new ArrayList<PlaylistSongEntity>();
+
+        String lastArtist = null;
+
+        while (!remainingSongs.isEmpty()) {
+            String currentLastArtist = lastArtist;
+
+            // Try to find a song from a different artist than the previous one
+            var nextSong = remainingSongs.stream()
+                    .filter(playlistSong ->
+                            !playlistSong.getSong().getArtist().equals(currentLastArtist))
+                    .findFirst()
+                    .orElse(remainingSongs.get(0));
+
+            result.add(nextSong);
+            remainingSongs.remove(nextSong);
+            lastArtist = nextSong.getSong().getArtist();
+        }
+
+        return result;
     }
 }
