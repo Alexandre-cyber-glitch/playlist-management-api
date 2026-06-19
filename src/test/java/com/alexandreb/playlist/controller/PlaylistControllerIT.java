@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
-
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static com.alexandreb.playlist.utils.Tools.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -157,5 +157,40 @@ class PlaylistControllerIT {
             assertThat(currentGenre).as("Two consecutive songs should not have the same genre")
                     .isNotEqualTo(previousGenre);
         }
+    }
+
+    @Test
+    @Transactional
+    void shouldExportPlaylistAsM3u() throws Exception {
+        var playlistId = createPlaylistWithMusic(mockMvc);
+
+        var response = mockMvc.perform(get("/api/playlists/{playlistId}/export/{format}", playlistId, "M3U"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(response).contains("#EXTM3U");
+        assertThat(response).contains("#PLAYLIST:");
+        assertThat(response).contains("#DESCRIPTION:");
+        assertThat(response).contains("#EXTINF:");
+        assertThat(response).contains("Linkin Park");
+    }
+
+    @Test
+    @Transactional
+    void shouldExportPlaylistAsJson() throws Exception {
+        var playlistId = createPlaylistWithMusic(mockMvc);
+
+        var response = mockMvc.perform(get("/api/playlists/{playlistId}/export/{format}", playlistId, "JSON"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(response).contains("\"name\"");
+        assertThat(response).contains("\"description\"");
+        assertThat(response).contains("\"songs\"");
+        assertThat(response).contains("Linkin Park");
     }
 }

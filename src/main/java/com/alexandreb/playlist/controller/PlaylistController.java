@@ -1,5 +1,6 @@
 package com.alexandreb.playlist.controller;
 
+import com.alexandreb.playlist.domain.ExportFormat;
 import com.alexandreb.playlist.domain.ShuffleType;
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
@@ -7,6 +8,7 @@ import com.alexandreb.playlist.dto.playlist.UpdatePlaylistRequest;
 import com.alexandreb.playlist.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,5 +64,14 @@ public class PlaylistController {
     public PlaylistResponse shuffle(@PathVariable Long playlistId, @PathVariable ShuffleType shuffleType
     ) {
         return playlistService.shuffle(playlistId, shuffleType);
+    }
+
+    @GetMapping(
+            value = "/{playlistId}/export/{format}",
+            produces = MediaType.TEXT_PLAIN_VALUE
+    )
+    public String export(@PathVariable Long playlistId, @PathVariable ExportFormat format
+    ) {
+        return playlistService.export(playlistId, format);
     }
 }

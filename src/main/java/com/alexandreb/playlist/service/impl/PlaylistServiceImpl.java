@@ -1,5 +1,6 @@
 package com.alexandreb.playlist.service.impl;
 
+import com.alexandreb.playlist.domain.ExportFormat;
 import com.alexandreb.playlist.domain.ShuffleType;
 import com.alexandreb.playlist.dto.playlist.CreatePlaylistRequest;
 import com.alexandreb.playlist.dto.playlist.PlaylistResponse;
@@ -14,6 +15,7 @@ import com.alexandreb.playlist.repository.PlaylistRepository;
 import com.alexandreb.playlist.repository.PlaylistSongRepository;
 import com.alexandreb.playlist.repository.SongRepository;
 import com.alexandreb.playlist.service.PlaylistService;
+import com.alexandreb.playlist.strategy.export.PlaylistExporterFactory;
 import com.alexandreb.playlist.strategy.shuffle.ShuffleStrategyFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final SongRepository songRepository;
     private final PlaylistMapper playlistMapper;
     private final ShuffleStrategyFactory shuffleStrategyFactory;
+    private final PlaylistExporterFactory playlistExporterFactory;
 
     @Override
     public PlaylistResponse create(CreatePlaylistRequest request) {
@@ -135,6 +138,16 @@ public class PlaylistServiceImpl implements PlaylistService {
         playlistSongRepository.saveAll(shuffledSongs);
 
         return playlistMapper.toResponse(playlist);
+    }
+
+    @Override
+    public String export(Long playlistId, ExportFormat format) {
+        var playlist = getPlaylistOrThrow(playlistId);
+        var playlistSongs = playlistSongRepository.findByPlaylistIdOrderByPositionAsc(playlistId);
+
+        var exporter = playlistExporterFactory.getExporter(format);
+
+        return exporter.export(playlist, playlistSongs);
     }
 
 
